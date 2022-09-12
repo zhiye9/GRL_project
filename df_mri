@@ -1,6 +1,44 @@
 import nilearn as nil
 from nilearn import datasets
 import numpy as np
+from pymatch.Matcher import Matcher
+import pandas as pd
 
 pcp1 = nil.datasets.fetch_abide_pcp(pipeline='ccs', DX_GROUP = 1)
 pcp0 = nil.datasets.fetch_abide_pcp(pipeline='ccs', DSM_IV_TR = 0)
+
+HC = pd.DataFrame(data = np.c_[pcp0.func_preproc, pcp0.phenotypic.AGE_AT_SCAN, pcp0.phenotypic.SEX, pcp0.phenotypic.DSM_IV_TR], columns= ['file', 'age', 'sex', 'autism'])
+DO = pd.DataFrame(data = np.c_[pcp1.func_preproc, pcp1.phenotypic.AGE_AT_SCAN, pcp1.phenotypic.SEX, pcp1.phenotypic.DSM_IV_TR], columns= ['file', 'age', 'sex', 'autism'])
+pheno = ['file', 'age', 'sex', 'autism']
+
+HC_match = HC[pheno]
+HC_match[["age"]] = HC_match [["age"]].astype(float)
+HC_match[["sex"]] = HC_match [["sex"]].astype(int)
+HC_match[["autism"]] = HC_match [["autism"]].astype(int)
+
+DO_match = DO[pheno]
+DO_match[["age"]] = DO_match [["age"]].astype(float)
+DO_match[["sex"]] = DO_match [["sex"]].astype(int)
+DO_match[["autism"]] = DO_match [["autism"]].astype(int)
+
+HC_DO_match = pd.concat([DO_match, HC_match])
+
+match_PSM = Matcher(DO_Match, HC_Match, yvar="autism", exclude=['file'])
+np.random.seed(20220912)
+match_PSM.fit_scores(balance=True, nmodels=1000)
+match_PSM.match(method = 'min', nmatches = 1, threshold = 0.001)
+match_PSM.predict_scores()
+HC_DO_matched = match_PSM.matched_data[['file', 'age', 'sex', 'autism']].sort_values('autism', ascending = False)
+
+#Compare distribution plots of age before and after PSM
+def plot_PS_score(data, yvar, label):
+  sns.distplot(data[data[yvar]==0].age, label=label[0])
+  sns.distplot(data[data[yvar]==1].age, label=label[1])
+  plt.legend(loc='upper right')
+  #plt.xlim((0, 1))
+  plt.title("Propensity Scores Before Matching")
+  plt.ylabel("Percentage (%)")
+  plt.xlabel("Scores")
+
+plot_PS_score(HC_DO_matched, yvar = 'autism', label = ['Healthy Control', 'Autism'])
+plot_PS_score(HC_DO_match, yvar = 'autism', label = ['Healthy Control', 'Autism'])
