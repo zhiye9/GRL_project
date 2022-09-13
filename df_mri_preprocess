@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import nilearn as nil
 from nilearn import datasets
 import numpy as np
@@ -59,7 +62,8 @@ plot_PS_score(HC_DO_matched, yvar = 'autism', label = ['Healthy Control', 'Autis
 plot_PS_score(HC_DO_match, yvar = 'autism', label = ['Healthy Control', 'Autism'])
 
 #Load resting-state functional MRI and compute correlation matrix
-mri_ls = HC_DO_matched_NoRep['file']
+df_age21_33 = HC_DO_matched_NoRep[(HC_DO_matched_NoRep['age'] > 21) & (HC_DO_matched_NoRep['age'] < 33)]
+mri_ls = df_age21_33['file']
 canica = CanICA(n_components=25,
                 memory="nilearn_cache", memory_level = 2, n_jobs = -1,
                 mask_strategy='whole-brain-template',
