@@ -7,21 +7,18 @@ from nilearn.decomposition import CanICA
 import nibabel as nib
 from nilearn.decomposition import CanICA
 
-#Load data
-pcp1 = nil.datasets.fetch_abide_pcp(pipeline='ccs', DX_GROUP = 1)
-pcp0 = nil.datasets.fetch_abide_pcp(pipeline='ccs', DSM_IV_TR = 0)
+#Load data 
+pcp = nil.datasets.fetch_abide_pcp(pipeline ='ccs', DSM_IV_TR = [0 ,1])
+df = pd.DataFrame(data = np.c_[pcp.phenotypic.SUB_ID, pcp.func_preproc, pcp.phenotypic.AGE_AT_SCAN, pcp.phenotypic.SEX, pcp.phenotypic.DSM_IV_TR], columns= ['eid', 'file', 'age', 'sex', 'autism'])
 
 #Propensity socre matching healthy and autism subjects
-HC = pd.DataFrame(data = np.c_[pcp0.func_preproc, pcp0.phenotypic.AGE_AT_SCAN, pcp0.phenotypic.SEX, pcp0.phenotypic.DSM_IV_TR], columns= ['file', 'age', 'sex', 'autism'])
-DO = pd.DataFrame(data = np.c_[pcp1.func_preproc, pcp1.phenotypic.AGE_AT_SCAN, pcp1.phenotypic.SEX, pcp1.phenotypic.DSM_IV_TR], columns= ['file', 'age', 'sex', 'autism'])
-pheno = ['file', 'age', 'sex', 'autism']
+HC_match = df[df['autism'] == '0']
+DO_match = df[df['autism'] == '1']
 
-HC_match = HC[pheno]
 HC_match[["age"]] = HC_match [["age"]].astype(float)
 HC_match[["sex"]] = HC_match [["sex"]].astype(int)
 HC_match[["autism"]] = HC_match [["autism"]].astype(int)
 
-DO_match = DO[pheno]
 DO_match[["age"]] = DO_match [["age"]].astype(float)
 DO_match[["sex"]] = DO_match [["sex"]].astype(int)
 DO_match[["autism"]] = DO_match [["autism"]].astype(int)
@@ -72,5 +69,5 @@ ica = canica.fit_transform(mri_ls)
 connectome_measure = ConnectivityMeasure(kind='correlation', vectorize=True)
 cor_matrix = connectome_measure.fit_transform(ica)            
 
-#Run on a test set with 60 subjects
+
                 
