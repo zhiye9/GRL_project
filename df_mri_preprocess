@@ -5,6 +5,7 @@ from pymatch.Matcher import Matcher
 import pandas as pd
 from nilearn.decomposition import CanICA
 import nibabel as nib
+from nilearn.decomposition import CanICA
 
 #Load data
 pcp1 = nil.datasets.fetch_abide_pcp(pipeline='ccs', DX_GROUP = 1)
@@ -61,3 +62,15 @@ plot_PS_score(HC_DO_matched, yvar = 'autism', label = ['Healthy Control', 'Autis
 plot_PS_score(HC_DO_match, yvar = 'autism', label = ['Healthy Control', 'Autism'])
 
 #Load resting-state functional MRI and compute correlation matrix
+mri_ls = HC_DO_matched_NoRep['file']
+canica = CanICA(n_components=25,
+                memory="nilearn_cache", memory_level = 2, n_jobs = -1,
+                mask_strategy='whole-brain-template',
+                random_state=0)
+                
+ica = canica.fit_transform(mri_ls)                
+connectome_measure = ConnectivityMeasure(kind='correlation', vectorize=True)
+cor_matrix = connectome_measure.fit_transform(ica)            
+
+#Run on a test set with 60 subjects
+                
