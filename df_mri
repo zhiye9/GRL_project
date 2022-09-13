@@ -3,10 +3,14 @@ from nilearn import datasets
 import numpy as np
 from pymatch.Matcher import Matcher
 import pandas as pd
+from nilearn.decomposition import CanICA
+import nibabel as nib
 
+#Load data
 pcp1 = nil.datasets.fetch_abide_pcp(pipeline='ccs', DX_GROUP = 1)
 pcp0 = nil.datasets.fetch_abide_pcp(pipeline='ccs', DSM_IV_TR = 0)
 
+#Propensity socre matching healthy and autism subjects
 HC = pd.DataFrame(data = np.c_[pcp0.func_preproc, pcp0.phenotypic.AGE_AT_SCAN, pcp0.phenotypic.SEX, pcp0.phenotypic.DSM_IV_TR], columns= ['file', 'age', 'sex', 'autism'])
 DO = pd.DataFrame(data = np.c_[pcp1.func_preproc, pcp1.phenotypic.AGE_AT_SCAN, pcp1.phenotypic.SEX, pcp1.phenotypic.DSM_IV_TR], columns= ['file', 'age', 'sex', 'autism'])
 pheno = ['file', 'age', 'sex', 'autism']
@@ -23,12 +27,25 @@ DO_match[["autism"]] = DO_match [["autism"]].astype(int)
 
 HC_DO_match = pd.concat([DO_match, HC_match])
 
-match_PSM = Matcher(DO_Match, HC_Match, yvar="autism", exclude=['file'])
-np.random.seed(20220912)
-match_PSM.fit_scores(balance=True, nmodels=1000)
-match_PSM.match(method = 'min', nmatches = 1, threshold = 0.001)
+match_PSM = Matcher(DO_match, HC_match, yvar="autism", exclude=['file', 'eid'])
+np.random.seed(6)
+match_PSM.fit_scores(balance=True, nmodels = 6000)
+match_PSM.match(method = 'min', nmatches = 2, threshold = 0.001)
+HC_DO_matched = match_PSM.matched_data[['eid', 'file', 'age', 'sex', 'autism']].sort_values('autism', ascending = False)
 match_PSM.predict_scores()
-HC_DO_matched = match_PSM.matched_data[['file', 'age', 'sex', 'autism']].sort_values('autism', ascending = False)
+#np.unique(np.unique(HC_DO_matched[HC_DO_matched['autism'] == 0]['file'], return_counts = True)[1], return_counts = True)
+HC_DO_matched_NoRep = HC_DO_matched.drop_duplicates(subset = ['file'])
+HC_DO_matched_NoRep.reset_index(drop = True, inplace = True)
+
+'''
+path = '/content/drive/GRL/Project/'
+
+HC_DO_matched_NoRep.to_csv('HC_DO_matched_NoRep.csv', index = False)
+!cp HC_DO_matched_NoRep.csv '/content/drive/My Drive/GRL/Project/'
+
+HC_DO_matched_NoRep = pd.read_csv('/content/drive/My Drive/GRL/Project/HC_DO_matched_NoRep.csv')
+HC_DO_matched_NoRep['eid'] == HC_DO_matched_NoRep['eid'].astype(str)
+'''
 
 #Compare distribution plots of age before and after PSM
 def plot_PS_score(data, yvar, label):
@@ -42,3 +59,5 @@ def plot_PS_score(data, yvar, label):
 
 plot_PS_score(HC_DO_matched, yvar = 'autism', label = ['Healthy Control', 'Autism'])
 plot_PS_score(HC_DO_match, yvar = 'autism', label = ['Healthy Control', 'Autism'])
+
+#Load resting-state functional MRI and compute correlation matrix
