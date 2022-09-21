@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from nilearn.decomposition import CanICA
 import nibabel as nib
-from nilearn.decomposition import CanICA
+from nilearn.connectome import ConnectivityMeasure
 
 #Load data 
 pcp = nil.datasets.fetch_abide_pcp(pipeline ='ccs', DSM_IV_TR = [0 ,1])
