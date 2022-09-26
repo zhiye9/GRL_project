@@ -4,17 +4,19 @@
 import nilearn as nil
 from nilearn import datasets
 import numpy as np
-#from pymatch.Matcher import Matcher
+from Install_PSM import Matcher
 import pandas as pd
 from nilearn.decomposition import CanICA
 import nibabel as nib
 from nilearn.connectome import ConnectivityMeasure
 
+
+
 #Load data 
 pcp = nil.datasets.fetch_abide_pcp(pipeline ='ccs', DSM_IV_TR = [0 ,1])
 df = pd.DataFrame(data = np.c_[pcp.phenotypic.SUB_ID, pcp.func_preproc, pcp.phenotypic.AGE_AT_SCAN, pcp.phenotypic.SEX, pcp.phenotypic.DSM_IV_TR], columns= ['eid', 'file', 'age', 'sex', 'autism'])
 
-#Propensity socre matching healthy and autism subjects
+#Propensity socre matching healthy and autism subjects by age and sex
 HC_match = df[df['autism'] == '0']
 DO_match = df[df['autism'] == '1']
 
@@ -27,7 +29,6 @@ DO_match[["sex"]] = DO_match [["sex"]].astype(int)
 DO_match[["autism"]] = DO_match [["autism"]].astype(int)
 
 HC_DO_match = pd.concat([DO_match, HC_match])
-
 match_PSM = Matcher(DO_match, HC_match, yvar="autism", exclude=['file', 'eid'])
 np.random.seed(6)
 match_PSM.fit_scores(balance=True, nmodels = 6000)
@@ -37,6 +38,10 @@ match_PSM.predict_scores()
 #np.unique(np.unique(HC_DO_matched[HC_DO_matched['autism'] == 0]['file'], return_counts = True)[1], return_counts = True)
 HC_DO_matched_NoRep = HC_DO_matched.drop_duplicates(subset = ['file'])
 HC_DO_matched_NoRep.reset_index(drop = True, inplace = True)
+
+#Only keep subjects from age 21 to 33
+df_age21_33 = HC_DO_matched_NoRep[(HC_DO_matched_NoRep['age'] > 21) & (HC_DO_matched_NoRep['age'] < 33)]
+df_age21_33.to_csv('df_age21_33.csv', index = False)
 
 '''
 path = '/content/drive/GRL/Project/'
@@ -73,5 +78,8 @@ ica = canica.fit_transform(mri_ls)
 connectome_measure = ConnectivityMeasure(kind='correlation', vectorize=True)
 cor_matrix = connectome_measure.fit_transform(ica)            
 
+#Save extracted correlation matrix
 
+for i in range(len(cor_matrix)):
+  np.savetxt('%s.txt' % (df_test.phenotypic.SUB_ID[i]), cor_matrix[i])
                 
