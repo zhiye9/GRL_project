@@ -206,3 +206,45 @@ class GCN3(torch.nn.Module):
         out = x if self.return_embeds else self.softmax(x)
 
         return out        
+
+class GCN_Graph(torch.nn.Module):
+    def __init__(self, CN, input_dim, hidden_dim, output_dim, num_layers, dropout):
+        super(GCN_Graph, self).__init__()
+
+        # Choose CN from GATN6, GATN3, GCN6 and GCN3
+        self.gnn_node = self.CN(input_dim = input_dim, 
+                            hidden_dim = hidden_dim,
+                            output_dim = hidden_dim,
+                            dropout = dropout,
+                            return_embeds=True)
+
+        self.pool = global_mean_pool
+
+        # Output layer
+        self.linear = torch.nn.Linear(hidden_dim, output_dim)
+
+
+    def reset_parameters(self):
+      self.gnn_node.reset_parameters()
+      self.linear.reset_parameters()
+
+    def forward(self, batched_data):
+        #x, edge_index, edge_weight, batch = batched_data.x.reshape([-1, 1]), batched_data.edge_index, batched_data.edge_attr, batched_data.batch
+        x, edge_index, edge_attr, batch = batched_data.x, batched_data.edge_index, batched_data.edge_attr, batched_data.batch
+        #print(x.shape)
+        #print(edge_index.shape)
+        #print(edge_weight.shape)
+        # embed contains the features
+        #embed = self.node_encoder(x)
+        out = None
+        
+        embed = self.gnn_node(x, edge_index, edge_attr)
+        #print(f'embd: {embed.shape}')
+        features = self.pool(embed, batch)
+        #print(f'embd: {features.shape}')
+        #out = F.relu(self.linear(features))
+        out = self.linear(features)
+        #out = F.log_softmax(self.linear(features))
+
+        return out    
+ 
