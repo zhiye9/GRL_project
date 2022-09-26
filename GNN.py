@@ -13,6 +13,7 @@ import torch.nn.functional as F
 import pandas as pd
 import os
 from tqdm import tqdm
+from torch_geometric.nn import global_add_pool, global_mean_pool
 
 class GATN6(torch.nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim,
