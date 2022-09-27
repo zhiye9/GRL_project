@@ -10,7 +10,7 @@ Using Graph Convolutional Networks (GCN) and Graph Attention Networks (GAN) to c
 Data downloading and proessing were implemented on the platform of [Nilean](https://nilearn.github.io/) in Python. 
 
 ### Dataset and Models
-Dataset and Models refers to the lecture material and implemented with PyTorh Geometric in Python.
+Dataset and Models refers to the lecture material and implemented with [PyTorh Geometric](https://pytorch-geometric.readthedocs.io/) in Python.
 
 ### Code Structure
 - df_mri_preprocess.py: Downloading and processing MRI data.
