@@ -15,6 +15,7 @@ import torch
 import torch.nn.functional as F
 import pandas as pd
 import os
+from sklearn.svm import SVC
 from tqdm import tqdm
 from torch_geometric.nn import global_add_pool, global_mean_pool
 from pyg_dataset import MriDataset
@@ -161,3 +162,43 @@ for epoch in range(1, 1 + args["epochs"]):
         f'Train: {100 * train_rocauc:.6f}%, '
         f'Valid: {100 * valid_rocauc:.6f}% '
         f'Test: {100 * test_rocauc:.6f}%')
+
+
+#Train baseline model
+df_files = pd.read_csv('../df_age21_33.csv')
+df_files['txt'] = df_files['eid'].astype(str) + '.txt'
+
+df_data = []
+for i in range(0, df_files.shape[0]):
+    tem = np.loadtxt(df_files['txt'].loc[i])
+    df_data.append(tem)
+    print("\r Process{}%".format(round((i+1)*100/df_files.shape[0])), end="")
+
+train_data = np.array([df_data[i] for i in tr_index])
+valid_data = np.array([df_data[i] for i in val_index])
+test_data = np.array([df_data[i] for i in te_index])
+
+y = np.array(df_files['autism'])
+
+train_y = y[tr_index]
+valid_y = y[val_index]
+test_y = y[te_index]
+
+model1 =  SVC(kernel = 'linear',  probability = True, C = 0.1)
+model2 =  SVC(kernel = 'linear',  probability = True, C = 0.01)
+model3 =  SVC(kernel = 'linear',  probability = True, C = 0.001)
+
+model1.fit(train_data, train_y)
+model2.fit(train_data, train_y)
+model3.fit(train_data, train_y)
+
+y_pred1 = model1.predict_proba(valid_data)[:, 1]
+y_pred2 = model2.predict_proba(valid_data)[:, 1]
+y_pred3 = model3.predict_proba(valid_data)[:, 1]
+
+roc1 = roc_auc_score(valid_y, y_pred1)
+roc2 = roc_auc_score(valid_y, y_pred2)
+roc3 = roc_auc_score(valid_y, y_pred3)
+max(roc1, roc2, roc3)
+
+roc = roc_auc_score(test_y, y_pred)
