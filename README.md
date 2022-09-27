@@ -1,6 +1,6 @@
 # Graph Representation Learning Project
 DTU Compute 2022 Graph Representation Learning Summer School
-This repository contains the codes and models for the the course project of [02901 Advanced Topics in Machine Learning: Graph Representation Learning](http://www2.compute.dtu.dk/courses/02901/) (2022). The project report can be found [here](GRL_report.pdf)
+This repository contains the codes and models for the the course project of [02901 Advanced Topics in Machine Learning: Graph Representation Learning](http://www2.compute.dtu.dk/courses/02901/) (2022). The project report can be found [here](GRL_report.pdf).
 
 ### Overview
 
