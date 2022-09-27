@@ -6,10 +6,10 @@ This repository contains the codes and models for the the course project of [029
 
 Using Graph Convolutional Networks (GCN) and Graph Attention Networks (GAN) to classify Austism subjects from healthy control. Five models including a baseline were tested on resting-state functional MRI data from the Autism Brain Imaging Data Exchange (ABIDE) and was preprocessed by the Preprocessed Connectomes Project (PCP) (http://preprocessed-connectomes-project.org/abide/).
 
-###Data
+### Data
 Data downloading and proessing were implemented on the platform of [Nilean](https://nilearn.github.io/) in Python. 
 
-###Dataset and Models
+### Dataset and Models
 Dataset and Models refers to the lecture material and implemented with PyTorh Geometric in Python.
 
 ### Code Structure
