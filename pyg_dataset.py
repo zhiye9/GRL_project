@@ -33,7 +33,7 @@ def adj_netx(correltation_matrix):
 
 #Build PyG Dataset
 class MriDataset(Dataset):
-  def __init__(self, root, filename, node_feature, test=False, transform=None, pre_transform=None):
+  def __init__(self, root, filename, test=False, transform=None, pre_transform=None):
       self.test = test
       self.filename = filename
       self.node_feature = node_feature
@@ -62,14 +62,7 @@ class MriDataset(Dataset):
           mri_net = adj_netx(pos_net(read_cor(mri['txt_files'], 25)))
 
           # Get node features
-          if (self.node_feature == 'effdeg'):
-            node_feats = torch.cat((self._get_node_features_eff(mri_net), self._get_node_features_degree(mri_net)), -1)
-          else if (self.node_feature == 'eff'):
-            node_feats = self._get_node_features_eff(mri_net)
-          else if (self.node_feature == 'deg'):
-            node_feats = self._get_node_features_degree(mri_net)
-          else:
-            raise ValueError('Please choose node features from eff, deg and effdeg.')
+          node_feats = torch.cat((self._get_node_features_eff(mri_net), self._get_node_features_degree(mri_net)), -1)
           # Get edge features
           edge_index, edge_feats = self._get_edge(mri_net)
           #Get labels
